@@ -22,7 +22,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('products.create', ['product' => new Product]);
     }
 
     /**
@@ -30,7 +30,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->$validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'price' => ['required', 'numberic', 'min:0'],
+        ]);
+
+        $product = Product::create($validated);
+
+        return redirect()->route('products.show', $product)
+            ->with('status', 'Product Created!');
     }
 
     /**
