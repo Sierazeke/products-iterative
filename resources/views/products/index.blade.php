@@ -25,6 +25,12 @@
                         <a href="{{ route('products.show', $product) }}" class="text-blue-600">Show</a>
                         <a href="{{ route('products.edit', $product) }}" class="ml-2 text-blue-600">Edit</a>
                     </td>
+                    <form method="POST" action="{{ route('products.destroy', $product) }}" class="inline"
+                        onsubmit="return confirm('Delete this product?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="ml-2 text-red-600">Delete</button>
+                    </form>
                 </tr>
             @empty
                 <tr><td colspan="3" class="p-3">No products yet.</td></tr>
