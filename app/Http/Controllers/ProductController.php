@@ -30,16 +30,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->$validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'price' => ['required', 'numberic', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
         ]);
 
         $product = Product::create($validated);
 
         return redirect()->route('products.show', $product)
-            ->with('status', 'Product Created!');
+            ->with('status', 'Product created.');
     }
 
     /**
@@ -63,7 +63,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $validated = $request->$validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numberic', 'min:0'],
