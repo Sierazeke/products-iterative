@@ -55,7 +55,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -63,7 +63,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        $validated = $request->$validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'price' => ['required', 'numberic', 'min:0'],
+        ]);
+
+        $product->update($validated);
+
+        return redirect()->route('products.show', $product)
+            ->with('status', 'Product Updated!');
+
     }
 
     /**
