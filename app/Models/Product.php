@@ -46,7 +46,6 @@ class Product extends Model
     /**
      * @throws DomainException ja krājumā nepietiek preču
      */
-    
     public function decreaseQuantity(int $amount): static
     {
         $this->assertPositiveAmount($amount);

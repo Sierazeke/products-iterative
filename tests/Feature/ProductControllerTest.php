@@ -12,14 +12,6 @@ class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // @vite nevajag testos (nav nedz build, nedz Vite servera)
-        $this->withoutVite();
-    }
-
     private function validData(array $overrides = []): array
     {
         return array_merge([
@@ -42,6 +34,18 @@ class ProductControllerTest extends TestCase
             'expiration date must be a date' => ['expiration_date', 'not-a-date'],
             'status is required' => ['status', ''],
             'status must be known' => ['status', 'bogus'],
+        ];
+    }
+
+    public static function invalidAdjustments(): array
+    {
+        return [
+            'amount is required' => [['amount' => '', 'action' => 'increase'], 'amount'],
+            'amount cannot be zero' => [['amount' => 0, 'action' => 'increase'], 'amount'],
+            'amount cannot be negative' => [['amount' => -5, 'action' => 'increase'], 'amount'],
+            'amount must be integer' => [['amount' => 'abc', 'action' => 'increase'], 'amount'],
+            'action is required' => [['amount' => 1, 'action' => ''], 'action'],
+            'action must be known' => [['amount' => 1, 'action' => 'bogus'], 'action'],
         ];
     }
 
@@ -153,17 +157,6 @@ class ProductControllerTest extends TestCase
 
         $this->assertModelMissing($product);
     }
-    public static function invalidAdjustments(): array
-    {
-        return [
-            'amount is required' => [['amount' => '', 'action' => 'increase'], 'amount'],
-            'amount cannot be zero' => [['amount' => 0, 'action' => 'increase'], 'amount'],
-            'amount cannot be negative' => [['amount' => -5, 'action' => 'increase'], 'amount'],
-            'amount must be integer' => [['amount' => 'abc', 'action' => 'increase'], 'amount'],
-            'action is required' => [['amount' => 1, 'action' => ''], 'action'],
-            'action must be known' => [['amount' => 1, 'action' => 'bogus'], 'action'],
-        ];
-    }
 
     public function test_adjust_quantity_increases_stock(): void
     {
@@ -211,5 +204,25 @@ class ProductControllerTest extends TestCase
     {
         $this->patch(route('products.adjust-quantity', 999), ['amount' => 1, 'action' => 'increase'])
             ->assertNotFound();
+    }
+
+    public function test_adjust_quantity_returns_json_when_requested(): void
+    {
+        $product = Product::factory()->create(['quantity' => 10]);
+
+        $this->patchJson(route('products.adjust-quantity', $product), ['amount' => 5, 'action' => 'increase'])
+            ->assertOk()
+            ->assertJson(['quantity' => 15]);
+    }
+
+    public function test_adjust_quantity_returns_422_json_for_insufficient_stock(): void
+    {
+        $product = Product::factory()->create(['quantity' => 3]);
+
+        $this->patchJson(route('products.adjust-quantity', $product), ['amount' => 4, 'action' => 'decrease'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('amount');
+
+        $this->assertSame(3, $product->fresh()->quantity);
     }
 }
