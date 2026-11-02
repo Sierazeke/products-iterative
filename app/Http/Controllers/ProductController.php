@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use DomainException;
+
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Enums\ProductStatus;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -90,5 +93,25 @@ class ProductController extends Controller
             'expiration_date' => ['nullable', 'date'],
             'status' => ['required', Rule::enum(ProductStatus::class)],
         ]);
+    }
+
+    public function adjustQuantity(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'integer', 'min:1', 'max:100000'],
+            'action' => ['required', Rule::in(['increase', 'decrease'])],
+        ]);
+
+        $amount = (int) $validated['amount'];
+        $delta = $validated['action'] === 'increase' ? $amount : -$amount;
+
+        try {
+            $product->adjustQuantity($delta);
+        } catch (DomainException $e) {
+            throw ValidationException::withMessages(['amount' => $e->getMessage()]);
+        }
+
+        return redirect()->route('products.show', $product)
+            ->with('status', "Quantity changed to {$product->quantity}.");
     }
 }
