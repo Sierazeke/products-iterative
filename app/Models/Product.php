@@ -6,6 +6,7 @@ use App\Enums\ProductStatus;
 use DomainException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class Product extends Model
 {
@@ -33,19 +34,39 @@ class Product extends Model
         ];
     }
 
-    /** 
-     * @throws DomainException
-     */
-    public function adjustQuantity(int $delta): void
+    public function increaseQuantity(int $amount): static
     {
-        $newQuantity = $this->quantity + $delta;
+        $this->assertPositiveAmount($amount);
 
-        if ($newQuantity < 0) {
-            throw new DomainException(
-                "Not enough stock: have {$this->quantity}, tried to remove " . abs($delta) . '.'
-            );
+        $this->newQuery()->whereKey($this->getKey())->increment('quantity', $amount);
+
+        return $this->refresh();
+    }
+
+    /**
+     * @throws DomainException ja krājumā nepietiek preču
+     */
+    
+    public function decreaseQuantity(int $amount): static
+    {
+        $this->assertPositiveAmount($amount);
+
+        $affected = $this->newQuery()
+            ->whereKey($this->getKey())
+            ->where('quantity', '>=', $amount)
+            ->decrement('quantity', $amount);
+
+        if ($affected === 0) {
+            throw new DomainException("Not enough stock to remove {$amount} units.");
         }
 
-        $this->update(['quantity' => $newQuantity]);
+        return $this->refresh();
+    }
+
+    private function assertPositiveAmount(int $amount): void
+    {
+        if ($amount < 1) {
+            throw new InvalidArgumentException('Amount must be a positive integer.');
+        }
     }
 }

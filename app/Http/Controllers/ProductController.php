@@ -103,10 +103,14 @@ class ProductController extends Controller
         ]);
 
         $amount = (int) $validated['amount'];
+
         $delta = $validated['action'] === 'increase' ? $amount : -$amount;
 
         try {
-            $product->adjustQuantity($delta);
+            match ($validated['action']) {
+                'increase' => $product->increaseQuantity($amount),
+                'decrease' => $product->decreaseQuantity($amount),
+            };
         } catch (DomainException $e) {
             throw ValidationException::withMessages(['amount' => $e->getMessage()]);
         }
