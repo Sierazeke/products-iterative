@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Enums\ProductStatus;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -30,11 +32,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-        ]);
+        $validated = $this->validated($request);
 
         $product = Product::create($validated);
 
@@ -63,11 +61,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numberic', 'min:0'],
-        ]);
+        $validated = $this->validated($request);
 
         $product->update($validated);
 
@@ -85,5 +79,16 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
             ->with('status', 'Product Deleted!');
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'quantity' => ['required', 'integer', 'min:0'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'expiration_date' => ['nullable', 'date'],
+            'status' => ['required', Rule::enum(ProductStatus::class)],
+        ]);
     }
 }
