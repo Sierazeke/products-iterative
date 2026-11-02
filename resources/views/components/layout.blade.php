@@ -15,8 +15,11 @@
 
        <nav>
            <ul>
-               <li><a href="{{ route('products.index') }}">All products</a></li>
-               <li><a href="{{ route('products.create') }}">New product</a></li>
+                <header>
+                    <a href="{{ route('products.index') }}">LOGO (test)</a>
+                </header>
+                 <li><a href="{{ route('products.index') }}">All products</a></li>
+                <li><a href="{{ route('products.create') }}">New product</a></li>
            </ul>
        </nav>
 
@@ -28,13 +31,13 @@
            {{ $slot }}
        </main>
 
-       <aside>
-           <h2>Info</h2>
-           <p>Simple CRUD demo built with Laravel.</p>
-       </aside>
+        <aside>
+            <h2>Ads</h2>
+            <p>Test ad: buy one, get one free!</p>
+        </aside>
 
-       <footer>
-           <p>&copy; {{ date('Y') }} {{ config('app.name') }}</p>
-       </footer>
+        <footer>
+            <p>&copy; {{ date('Y') }} Test Company. All rights reserved.</p>
+        </footer>
    </body>
    </html>
