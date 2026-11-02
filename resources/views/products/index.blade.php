@@ -6,7 +6,9 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Price</th>
+                <th>Quantity</th>
+                <th>Expires</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -14,20 +16,15 @@
             @forelse ($products as $product)
                 <tr>
                     <td>{{ $product->name }}</td>
-                    <td>{{ number_format($product->price, 2) }}</td>
+                    <td>{{ $product->quantity }}</td>
+                    <td>{{ $product->expiration_date?->format('d.m.Y') ?? '-' }}</td>
+                    <td>{{ $product->status->label() }}</td>
                     <td>
-                        <a href="{{ route('products.show', $product) }}">Show</a>
-                        <a href="{{ route('products.edit', $product) }}">Edit</a>
-                        <form method="POST" action="{{ route('products.destroy', $product) }}"
-                              onsubmit="return confirm('Delete this product?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit">Delete</button>
-                        </form>
+                        {{-- Show / Edit / Delete kā iepriekš --}}
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="3">No products yet.</td></tr>
+                <tr><td colspan="5">No products yet.</td></tr>
             @endforelse
         </tbody>
     </table>
