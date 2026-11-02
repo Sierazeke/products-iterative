@@ -18,6 +18,14 @@ body {
 
 body > header { grid-area: header; }
 body > nav    { grid-area: nav; }
+body > nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
 body > main   { grid-area: main; }
 body > aside  { grid-area: aside; }
 body > footer { grid-area: footer; }
