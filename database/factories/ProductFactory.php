@@ -46,7 +46,6 @@ class ProductFactory extends Factory
             ),
             'quantity' => $status === ProductStatus::Discontinued ? 0 : fake()->numberBetween(0, 200),
             'description' => fake()->optional(0.8)->sentences(2, true),
-            // +/- 30 dienas ap tipisko derīguma termiņu, lai daļa produktu būtu jau novecojuši
             'expiration_date' => now()->addDays($shelfLifeDays + fake()->numberBetween(-30, 30))->toDateString(),
             'status' => $status,
         ];
