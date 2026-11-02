@@ -153,4 +153,63 @@ class ProductControllerTest extends TestCase
 
         $this->assertModelMissing($product);
     }
+    public static function invalidAdjustments(): array
+    {
+        return [
+            'amount is required' => [['amount' => '', 'action' => 'increase'], 'amount'],
+            'amount cannot be zero' => [['amount' => 0, 'action' => 'increase'], 'amount'],
+            'amount cannot be negative' => [['amount' => -5, 'action' => 'increase'], 'amount'],
+            'amount must be integer' => [['amount' => 'abc', 'action' => 'increase'], 'amount'],
+            'action is required' => [['amount' => 1, 'action' => ''], 'action'],
+            'action must be known' => [['amount' => 1, 'action' => 'bogus'], 'action'],
+        ];
+    }
+
+    public function test_adjust_quantity_increases_stock(): void
+    {
+        $product = Product::factory()->create(['quantity' => 10]);
+
+        $this->patch(route('products.adjust-quantity', $product), ['amount' => 5, 'action' => 'increase'])
+            ->assertRedirect(route('products.show', $product))
+            ->assertSessionHas('status');
+
+        $this->assertSame(15, $product->fresh()->quantity);
+    }
+
+    public function test_adjust_quantity_decreases_stock(): void
+    {
+        $product = Product::factory()->create(['quantity' => 10]);
+
+        $this->patch(route('products.adjust-quantity', $product), ['amount' => 4, 'action' => 'decrease'])
+            ->assertRedirect(route('products.show', $product));
+
+        $this->assertSame(6, $product->fresh()->quantity);
+    }
+
+    public function test_adjust_quantity_rejects_removing_more_than_in_stock(): void
+    {
+        $product = Product::factory()->create(['quantity' => 3]);
+
+        $this->patch(route('products.adjust-quantity', $product), ['amount' => 4, 'action' => 'decrease'])
+            ->assertSessionHasErrors('amount');
+
+        $this->assertSame(3, $product->fresh()->quantity);
+    }
+
+    #[DataProvider('invalidAdjustments')]
+    public function test_adjust_quantity_rejects_invalid_input(array $data, string $field): void
+    {
+        $product = Product::factory()->create(['quantity' => 10]);
+
+        $this->patch(route('products.adjust-quantity', $product), $data)
+            ->assertSessionHasErrors($field);
+
+        $this->assertSame(10, $product->fresh()->quantity);
+    }
+
+    public function test_adjust_quantity_returns_404_for_missing_product(): void
+    {
+        $this->patch(route('products.adjust-quantity', 999), ['amount' => 1, 'action' => 'increase'])
+            ->assertNotFound();
+    }
 }
