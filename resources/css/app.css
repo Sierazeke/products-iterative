@@ -44,3 +44,16 @@ body > aside {
 body > main {
     padding: 1rem;
 }
+
+@media (max-width: 700px) {
+    body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto auto;
+        grid-template-areas:
+            "header"
+            "nav"
+            "main"
+            "aside"
+            "footer";
+    }
+}
