@@ -23,13 +23,12 @@
            </ul>
        </nav>
 
-       <main>
-           @if (session('status'))
-               <p role="status">{{ session('status') }}</p>
-           @endif
+        <main>
+            <x-flash-success />
+            <x-flash-errors />
 
-           {{ $slot }}
-       </main>
+            {{ $slot }}
+        </main>
 
         <aside>
             <h2>Ads</h2>
